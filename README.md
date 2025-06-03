@@ -47,11 +47,17 @@ List of devices attached
 
 ## Deploy to the Oculus Quest 2
 Install brand new version onto the adb (oculus)
+```shell
 adb install oculus-app-0.1.0.apk
+```
 
 Update an already installed version
+```shell
 adb install -r oculus-app-0.1.0.apk
+```
 
 Send app to oculus
+```shell
 adb shell am start -n com.realsteelproject.oculusapp/com.unity3d.player.UnityPlayerGameActivity
+```
 
