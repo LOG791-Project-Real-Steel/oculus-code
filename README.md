@@ -1,6 +1,12 @@
 # Oculus Code
 Repository for the code that runs on the Oculus quest 2.
 
+## Authors
+- Adam Mihajlovic
+- Maxence Lord
+- Jean-Christophe Benoit
+- Raphael Camara
+
 ## Getting started
 
 ### Setup Unity
@@ -90,17 +96,21 @@ This section will show you how to build the unity project as an android applicat
 
 1. On the toolbar at the top of the unity application, click on `File > Build Profiles`.
 
-2. It should bring you to the Android platform where you can see `Build` and `Build aqnd Run` buttons. (Check that you are on the Adnroid platform by looking in the left menu and Android should be selected).
+2. It should bring you to the Android platform where you can see `Build` and `Build and Run` buttons. (Check that you are on the Adnroid platform by looking in the left menu and Android should be selected).
 
-3. When you are reaqdy to build the project, click on the `Build` button on the botton left of this window.
+    If you are on Windows, click and Android is not selected, click on the Android tab on the left and on the bottom left of the window, click on `Switch Platform` button.
 
-4. Next, create a folder somewhere on your PC (not in the repository) where you'll want to store your builds. You can call it `OculusBuilds` for example.
+3. When you are ready to build the project, click on the `Build` button on the botton left of this window
+
+    Next, create a folder somewhere on your PC (not in the repository) where you'll want to store your builds. You can call it `OculusBuilds` for example.
 
     Then, you'll want to name the build file in this format `oculus-app-X.X.X.apk` with the letters X representing the numbers of the current build version. For example, the first build version is 0.1.0 so the name of the build was `oculus-app-0.1.0.apk`.
 
+    If there's a pop-up that appears, simply click `Yes`.
+
     **Important note:** The first build you ever do on your machine can take anywhere from 20 to 30 minutes so, be patient. The following build should be faster depending on what you change in-between builds. 
 
-5. Once the build is finished, you can now deploy it by following the [deploy instructions](#deploy-to-the-oculus-quest-2).
+4. Once the build is finished, you can now deploy it by following the [deploy instructions](#deploy-to-the-oculus-quest-2).
 
 ## Deploy to the Oculus Quest 2
 This section will walk you through the steps that you need to do to deploy this application on the oculus quest 2.
