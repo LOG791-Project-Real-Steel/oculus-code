@@ -73,8 +73,5 @@ crashlytics-build.properties
 
 # Our own ignores
 .vscode
-/.utmp
-/.utmp/tools
+.utmp
 .idea
-/.utmp/tools
-.utmp/tools/release/arm64-v8a/compile_commands.json
