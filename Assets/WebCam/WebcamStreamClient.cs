@@ -18,8 +18,7 @@ public class WebcamStreamClient : MonoBehaviour
 
     async void Connect()
     {
-        websocket = new WebSocket("ws://10.192.160.51:8765/"); // replace with your PC IP
-        // websocket = new WebSocket("ws://localhost:8765/"); // replace with your PC IP
+        websocket = new WebSocket("ws://74.56.22.147:8765/"); // home server IP
 
         websocket.OnMessage += (bytes) =>
         {
