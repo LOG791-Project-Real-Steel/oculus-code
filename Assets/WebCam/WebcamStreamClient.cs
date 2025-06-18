@@ -1,6 +1,5 @@
 using NativeWebSocket;
 using UnityEngine;
-using System;
 using System.Collections;
 
 public class WebcamStreamClient : MonoBehaviour
@@ -12,19 +11,18 @@ public class WebcamStreamClient : MonoBehaviour
     void Start()
     {
         quadRenderer = GetComponent<Renderer>();
-        webcamTexture = new Texture2D(2, 2); // initial size
+        webcamTexture = new Texture2D(2, 2); // Will auto-resize
         Connect();
     }
 
     async void Connect()
     {
-        websocket = new WebSocket("ws://74.56.22.147:8765/"); // home server IP
+        websocket = new WebSocket("ws://74.56.22.147:8765/"); // home server ip
 
         websocket.OnMessage += (bytes) =>
         {
-            string base64 = System.Text.Encoding.UTF8.GetString(bytes);
-            byte[] imageData = Convert.FromBase64String(base64);
-            webcamTexture.LoadImage(imageData);
+            // UTILISE LE JPEG RAW pu de conversion 
+            webcamTexture.LoadImage(bytes);
             quadRenderer.material.mainTexture = webcamTexture;
         };
 
