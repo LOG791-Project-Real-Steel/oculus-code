@@ -4,8 +4,8 @@ using UnityEngine;
 public class RaceCar
 {
     private const float Max = 1;
-    private float throttle = 0;
-    private float steering = 0;
+    public float throttle = 0;
+    public float steering = 0;
 
     public float Throttle
     {

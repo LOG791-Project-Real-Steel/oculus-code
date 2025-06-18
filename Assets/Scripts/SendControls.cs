@@ -9,14 +9,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class test : MonoBehaviour
+public class SendControls : MonoBehaviour
 {
     private VRControls _controls;
-    
-    private string _serverAddress;
     private HttpClient _client;
-    private RaceCar car = new();
+    private RaceCar car = new RaceCar();
     
+    public string serverAddress;
     public TMP_Text textObject;
 
     void Awake()
@@ -44,7 +43,7 @@ public class test : MonoBehaviour
     {
         _client = new HttpClient
         {
-            BaseAddress = new Uri($"http://{_serverAddress}"),
+            BaseAddress = new Uri($"http://{serverAddress}"),
             Timeout = TimeSpan.FromSeconds(2)
         };
 
@@ -75,14 +74,14 @@ public class test : MonoBehaviour
         textObject.text = "server is online";
 
         using var clientWebSocket = new ClientWebSocket();
-        var uri = new Uri($"ws://{_serverAddress}/send");
+        var uri = new Uri($"ws://{serverAddress}/oculus");
 
         var connectTask = clientWebSocket.ConnectAsync(uri, CancellationToken.None);
         yield return new WaitUntil(() => connectTask.IsCompleted);
 
         while (clientWebSocket.State == WebSocketState.Open)
         {
-            textObject.text = JsonUtility.ToJson(car);
+            SetText(JsonUtility.ToJson(car));
 
             ArraySegment<byte> buffer = new(Encoding.UTF8.GetBytes(JsonUtility.ToJson(car)));
             var sendTask = clientWebSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
@@ -95,7 +94,6 @@ public class test : MonoBehaviour
     
     void Start()
     {
-        _serverAddress = "localhost:5000";
         StartCoroutine(ConnectToServerCoroutine());
     }
 
@@ -107,17 +105,20 @@ public class test : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        bool aButtonPressed = _controls.OculusTouchControllers.AButton.WasPressedThisFrame();
         float rightTriggerValue = _controls.OculusTouchControllers.RightTrigger.ReadValue<float>();
         float leftTriggerValue = _controls.OculusTouchControllers.LeftTrigger.ReadValue<float>();
         Vector2 thumbstick = _controls.OculusTouchControllers.RightJoyStick.ReadValue<Vector2>();
+
+        if (rightTriggerValue >= leftTriggerValue)
+        {
+            car.Throttle = -rightTriggerValue;
+        }
+        else
+        {
+            car.Throttle = leftTriggerValue;
+        }
         
-        car.Throttle = rightTriggerValue;
-        
-        /*SetText($"AButton pressed : {aButtonPressed}\n" +
-                $"Right Trigger Value : {rightTriggerValue:F3}\n" +
-                $"Left Trigger Value : {leftTriggerValue:F3}\n" +
-                $"Right Joystick Value : X={thumbstick.x:F3}, Y={thumbstick.y:F3}");*/
+        car.Steering = -thumbstick.x;
     }
 
     void OnDisable()

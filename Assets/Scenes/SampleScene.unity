@@ -613,6 +613,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae20675498993ae4f8fdc4b1326cdf1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _serverAddress: 74.56.22.147:8765
   textObject: {fileID: 1375737371}
 --- !u!114 &1375737371
 MonoBehaviour:
