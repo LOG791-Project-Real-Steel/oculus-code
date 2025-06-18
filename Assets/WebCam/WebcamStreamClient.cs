@@ -17,7 +17,7 @@ public class WebcamStreamClient : MonoBehaviour
 
     async void Connect()
     {
-        websocket = new WebSocket("ws://74.56.22.147:8765/"); // home server ip
+        websocket = new WebSocket("ws://74.56.22.147:8765/oculus"); // home server ip
 
         websocket.OnMessage += (bytes) =>
         {
