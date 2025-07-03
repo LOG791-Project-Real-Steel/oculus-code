@@ -13,6 +13,7 @@ public class WebSocketClient : MonoBehaviour
     private Coroutine sendLoop;
     private Controls _controls;
     private RaceCar car = new RaceCar();
+    public Renderer cylinderRenderer;
 
     void Start()
     {
@@ -37,7 +38,8 @@ public class WebSocketClient : MonoBehaviour
         {
             // UTILISE LE JPEG RAW pu de conversion 
             webcamTexture.LoadImage(bytes);
-            quadRenderer.material.mainTexture = webcamTexture;
+            //quadRenderer.material.mainTexture = webcamTexture;
+            cylinderRenderer.material.mainTexture = webcamTexture;
         };
         
         websocket.OnError += (e) =>
