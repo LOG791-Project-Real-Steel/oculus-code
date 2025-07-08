@@ -63,7 +63,7 @@ public class WebSocketClient : MonoBehaviour
                 websocket.Send(bytes);
             }
 
-            yield return new WaitForSeconds(0.05f); // 100ms
+            yield return new WaitForSeconds(0.05f); // 50ms
         }
     }
 
