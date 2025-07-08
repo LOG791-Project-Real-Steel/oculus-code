@@ -73,3 +73,6 @@ crashlytics-build.properties
 
 # Our own ignores
 .vscode
+.idea
+/oculus-build
+.utmp
