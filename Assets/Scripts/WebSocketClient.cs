@@ -1,6 +1,7 @@
 using NativeWebSocket;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Text;
 using TMPro;
 
@@ -9,15 +10,17 @@ public class WebSocketClient : MonoBehaviour
     WebSocket websocket;
     Texture2D webcamTexture;
     Renderer quadRenderer;
-    
+
     private Coroutine sendLoop;
     private Controls _controls;
     private RaceCar car = new RaceCar();
 
+    private ConcurrentQueue<byte[]> frameQueue = new ConcurrentQueue<byte[]>();
+
     void Start()
     {
         quadRenderer = GetComponent<Renderer>();
-        webcamTexture = new Texture2D(2, 2); // Will auto-resize
+        webcamTexture = new Texture2D(2, 2);
         _controls = new Controls();
         _controls.OculusTouchControllers.Enable();
         Connect();
@@ -25,21 +28,19 @@ public class WebSocketClient : MonoBehaviour
 
     async void Connect()
     {
-        websocket = new WebSocket("ws://74.56.22.147:8765/oculus"); // home server ip
+        websocket = new WebSocket("ws://74.56.22.147:8765/oculus");
 
         websocket.OnOpen += () =>
         {
             Debug.Log("Connection opened!");
             sendLoop = StartCoroutine(SendDataLoop());
         };
-        
+
         websocket.OnMessage += (bytes) =>
         {
-            // UTILISE LE JPEG RAW pu de conversion 
-            webcamTexture.LoadImage(bytes);
-            quadRenderer.material.mainTexture = webcamTexture;
+            frameQueue.Enqueue(bytes);
         };
-        
+
         websocket.OnError += (e) =>
         {
             Debug.Log("Error! " + e);
@@ -50,7 +51,7 @@ public class WebSocketClient : MonoBehaviour
             await websocket.Connect();
         }
     }
-    
+
     private IEnumerator SendDataLoop()
     {
         while (true)
@@ -63,7 +64,7 @@ public class WebSocketClient : MonoBehaviour
                 websocket.Send(bytes);
             }
 
-            yield return new WaitForSeconds(0.05f); // 50ms
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
@@ -73,17 +74,15 @@ public class WebSocketClient : MonoBehaviour
         float leftTriggerValue = _controls.OculusTouchControllers.Backward.ReadValue<float>();
         Vector2 thumbstick = _controls.OculusTouchControllers.Turn.ReadValue<Vector2>();
 
-        if (rightTriggerValue >= leftTriggerValue)
-        {
-            car.Throttle = -rightTriggerValue;
-        }
-        else
-        {
-            car.Throttle = leftTriggerValue;
-        }
-        
+        car.Throttle = rightTriggerValue >= leftTriggerValue ? -rightTriggerValue : leftTriggerValue;
         car.Steering = -thumbstick.x;
-        
+
+        if (frameQueue.TryDequeue(out var frameBytes))
+        {
+            webcamTexture.LoadImage(frameBytes);
+            quadRenderer.material.mainTexture = webcamTexture;
+        }
+
 #if !UNITY_WEBGL || UNITY_EDITOR
         websocket?.DispatchMessageQueue();
 #endif
