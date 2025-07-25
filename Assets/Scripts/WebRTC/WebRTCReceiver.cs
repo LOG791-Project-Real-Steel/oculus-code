@@ -1,24 +1,26 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using Unity.WebRTC;
-using System.Text;
 using System;
 using System.Collections;
+using System.Text;
 using NativeWebSocket;
 
 public class WebRTCReceiver : MonoBehaviour
 {
-    [Header("Target UI to show stream")]
-    public RawImage targetDisplay;
+    [Header("Target texture (Oculus-compatible)")]
+    public Renderer targetRenderer;
 
     private RTCPeerConnection peerConnection;
     private VideoStreamTrack videoTrack;
     private WebSocket websocket;
 
-    void Start()
+    private bool isConnected = false;
+
+    private void Start()
     {
+        Debug.Log("🟢 WebRTCReceiver starting...");
         SetupConnection();
-        ConnectToSignalingServer();
+        StartCoroutine(RetryConnect());
     }
 
     private void SetupConnection()
@@ -34,12 +36,18 @@ public class WebRTCReceiver : MonoBehaviour
 
         peerConnection.OnTrack = e =>
         {
+            Debug.Log($"🎥 Track received: {e.Track.Kind}");
+
             if (e.Track is VideoStreamTrack track)
             {
                 videoTrack = track;
                 videoTrack.OnVideoReceived += tex =>
                 {
-                    targetDisplay.texture = tex;
+                    Debug.Log("📷 Video frame received.");
+                    if (targetRenderer != null && tex != null)
+                    {
+                        targetRenderer.material.mainTexture = tex;
+                    }
                 };
             }
         };
@@ -50,29 +58,46 @@ public class WebRTCReceiver : MonoBehaviour
             {
                 var message = new
                 {
-                    type = "ice",
-                    candidate = candidate.Candidate,
-                    sdpMid = candidate.SdpMid,
-                    sdpMLineIndex = candidate.SdpMLineIndex
+                    to = "robot",
+                    type = "candidate",
+                    data = new
+                    {
+                        candidate = candidate.Candidate,
+                        sdpMid = candidate.SdpMid,
+                        sdpMLineIndex = candidate.SdpMLineIndex
+                    }
                 };
                 websocket.SendText(JsonUtility.ToJson(message));
+                Debug.Log("❄ ICE candidate sent.");
             }
         };
     }
 
+    private IEnumerator RetryConnect()
+    {
+        while (!isConnected)
+        {
+            Debug.Log("🔁 Attempting to connect to signaling server...");
+            ConnectToSignalingServer();
+            yield return new WaitForSeconds(2);
+        }
+    }
+
     private async void ConnectToSignalingServer()
     {
-        websocket = new WebSocket("ws://localhost:8888");
+        websocket = new WebSocket("ws://localhost:5000/robot/signaling2");
 
         websocket.OnOpen += () =>
         {
-            Debug.Log("Connected to signaling server");
+            Debug.Log("✅ WebSocket connection opened.");
             websocket.SendText("{\"role\": \"unity\"}");
+            isConnected = true;
         };
 
         websocket.OnMessage += (bytes) =>
         {
             var json = Encoding.UTF8.GetString(bytes);
+            Debug.Log("📨 Message received: " + json);
             var msg = JsonUtility.FromJson<SignalingMessage>(json);
 
             if (msg.type == "offer")
@@ -85,32 +110,43 @@ public class WebRTCReceiver : MonoBehaviour
 
                 StartCoroutine(HandleOffer(desc));
             }
-            else if (msg.type == "ice")
+            else if (msg.type == "candidate")
             {
                 var candidate = new RTCIceCandidate(new RTCIceCandidateInit
                 {
-                    candidate = msg.candidate,
-                    sdpMid = msg.sdpMid,
-                    sdpMLineIndex = msg.sdpMLineIndex
+                    candidate = msg.data.candidate,
+                    sdpMid = msg.data.sdpMid,
+                    sdpMLineIndex = msg.data.sdpMLineIndex
                 });
                 peerConnection.AddIceCandidate(candidate);
+                Debug.Log("📡 ICE candidate added.");
             }
         };
 
-        websocket.OnError += (e) => Debug.LogError("WebSocket error: " + e);
-        websocket.OnClose += (e) => Debug.Log("WebSocket closed");
+        websocket.OnClose += (e) =>
+        {
+            Debug.Log("🔌 WebSocket closed");
+            isConnected = false;
+        };
+
+        websocket.OnError += (e) =>
+        {
+            Debug.LogError("❌ WebSocket error: " + e);
+            isConnected = false;
+        };
 
         await websocket.Connect();
     }
 
     private IEnumerator HandleOffer(RTCSessionDescription offerDesc)
     {
+        Debug.Log("📥 Handling SDP offer...");
         var op = peerConnection.SetRemoteDescription(ref offerDesc);
         yield return new WaitUntil(() => op.IsDone);
 
         if (op.IsError)
         {
-            Debug.LogError("SetRemoteDescription failed: " + op.Error.message);
+            Debug.LogError("❌ SetRemoteDescription failed: " + op.Error.message);
             yield break;
         }
 
@@ -119,7 +155,7 @@ public class WebRTCReceiver : MonoBehaviour
 
         if (answerOp.IsError)
         {
-            Debug.LogError("CreateAnswer failed: " + answerOp.Error.message);
+            Debug.LogError("❌ CreateAnswer failed: " + answerOp.Error.message);
             yield break;
         }
 
@@ -130,17 +166,19 @@ public class WebRTCReceiver : MonoBehaviour
 
         if (setLocalOp.IsError)
         {
-            Debug.LogError("SetLocalDescription failed: " + setLocalOp.Error.message);
+            Debug.LogError("❌ SetLocalDescription failed: " + setLocalOp.Error.message);
             yield break;
         }
 
-        var answerMsg = new SignalingMessage
+        var answerMsg = new
         {
+            to = "robot",
             type = "answer",
             sdp = answer.sdp
         };
 
         websocket.SendText(JsonUtility.ToJson(answerMsg));
+        Debug.Log("📤 Sent SDP answer.");
     }
 
     private void Update()
@@ -152,6 +190,7 @@ public class WebRTCReceiver : MonoBehaviour
 
     private void OnDestroy()
     {
+        Debug.Log("🧹 Cleaning up...");
         videoTrack?.Dispose();
         peerConnection?.Close();
         peerConnection?.Dispose();
@@ -162,6 +201,12 @@ public class WebRTCReceiver : MonoBehaviour
     {
         public string type;
         public string sdp;
+        public CandidateData data;
+    }
+
+    [Serializable]
+    public class CandidateData
+    {
         public string candidate;
         public string sdpMid;
         public int sdpMLineIndex;

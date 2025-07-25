@@ -27,8 +27,8 @@ public class WebSocketClient : MonoBehaviour
     async void Connect()
     {
         //websocket = new WebSocket("ws://74.56.22.147:8765/oculus"); // home server ip
-        websocket = new WebSocket("ws://localhost:8765"); //Pour tester connecte a un serveur local
-
+        // websocket = new WebSocket("ws://localhost:8765"); //Pour tester connecte a un serveur local
+        websocket = new WebSocket("ws://localhost:5000/robot/signaling2");
 
         websocket.OnOpen += () =>
         {
@@ -99,5 +99,21 @@ public class WebSocketClient : MonoBehaviour
         {
             await websocket.Close();
         }
+    }
+}
+
+
+public class FollowCameraBillboard : MonoBehaviour
+{
+    public Transform cameraTransform;
+    public float distance = 2f;
+
+    void LateUpdate()
+    {
+        if (!cameraTransform) return;
+
+        transform.position = cameraTransform.position + cameraTransform.forward * distance;
+        transform.LookAt(cameraTransform);
+        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
     }
 }
