@@ -1,11 +1,24 @@
+using System;
 using UnityEngine;
 
 
 public class RaceCar
 {
     private const float Max = 1;
+    private DateTimeOffset inputTimestamp;
+    
     public float throttle = 0;
     public float steering = 0;
+
+    public void SetInputTimestamp(DateTimeOffset timestamp)
+    {
+        inputTimestamp = timestamp;
+    }
+
+    public DateTimeOffset GetInputTimestamp()
+    {
+        return inputTimestamp;
+    }
 
     public float Throttle
     {
