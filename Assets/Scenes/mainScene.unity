@@ -719,6 +719,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6140cef993531044cbc2e9af1cd6fbfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  robotIp: 192.168.0.102
 --- !u!1 &2097686654
 GameObject:
   m_ObjectHideFlags: 0

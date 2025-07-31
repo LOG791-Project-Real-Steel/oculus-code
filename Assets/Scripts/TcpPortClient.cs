@@ -27,8 +27,11 @@ public class TcpPortClient : MonoBehaviour
     private bool isReading = false;
     private Queue<VideoFrame> _frameQueue = new Queue<VideoFrame>();
     
-    private List<Delay> display_frame_delays = new List<Delay>();
-    private List<Delay> send_controls_delays = new List<Delay>();
+    private List<Stat> display_frame_delays = new List<Stat>();
+    private List<Stat> send_controls_delays = new List<Stat>();
+    private List<Stat> fps_over_time = new List<Stat>();
+    
+    private int numberOfVideoFramesReceived = 0;
     
     void Start()
     {
@@ -64,6 +67,7 @@ public class TcpPortClient : MonoBehaviour
                     StartCoroutine(ReadFramesCoroutine());
                     StartCoroutine(ReadAndSendPingCoroutine());
                     InvokeRepeating(nameof(SendControls), 0f, 0.05f);
+                    InvokeRepeating(nameof(CollectFps), 0f, 1.0f);
 
                     Debug.Log("Connected to robot.");
                     yield break; // Stop retry loop once connected
@@ -155,7 +159,8 @@ public class TcpPortClient : MonoBehaviour
 
                 lock (_frameQueue)
                 {
-                    _frameQueue.Enqueue(new VideoFrame(frameBuffer, DateTimeOffset.UtcNow));
+                    _frameQueue.Enqueue(new VideoFrame(frameBuffer, DateTimeOffset.Now));
+                    numberOfVideoFramesReceived++;
                 }
             }
 
@@ -174,8 +179,8 @@ public class TcpPortClient : MonoBehaviour
             byte[] bytes = Encoding.UTF8.GetBytes(json);
             clientStream.Write(bytes, 0, bytes.Length);
             
-            DateTimeOffset now = DateTimeOffset.UtcNow;
-            send_controls_delays.Add(new Delay(now, (int)(now - car.GetInputTimestamp()).TotalMilliseconds));
+            DateTimeOffset now = DateTimeOffset.Now;
+            send_controls_delays.Add(new Stat(now, (int)(now - car.GetInputTimestamp()).TotalMilliseconds));
         }
         catch (Exception ex)
         {
@@ -186,10 +191,16 @@ public class TcpPortClient : MonoBehaviour
             StartCoroutine(RetryConnectionLoop());
         }
     }
+
+    void CollectFps()
+    {
+        fps_over_time.Add(new Stat(DateTimeOffset.Now, numberOfVideoFramesReceived));
+        numberOfVideoFramesReceived = 0;
+    }
     
     void Update()
     {
-        DateTimeOffset time = DateTimeOffset.UtcNow;
+        DateTimeOffset time = DateTimeOffset.Now;
         float rightTriggerValue = _controls.OculusTouchControllers.Forward.ReadValue<float>();
         float leftTriggerValue = _controls.OculusTouchControllers.Backward.ReadValue<float>();
         Vector2 thumbstick = _controls.OculusTouchControllers.Turn.ReadValue<Vector2>();
@@ -215,8 +226,8 @@ public class TcpPortClient : MonoBehaviour
                 webcamTexture.LoadImage(frame.jpegData);
                 quadRenderer.material.mainTexture = webcamTexture;
 
-                DateTimeOffset now = DateTimeOffset.UtcNow;
-                display_frame_delays.Add(new Delay(now, (int)(now - frame.receivedTimestamp).TotalMilliseconds));
+                DateTimeOffset now = DateTimeOffset.Now;
+                display_frame_delays.Add(new Stat(now, (int)(now - frame.receivedTimestamp).TotalMilliseconds));
             }
         }
     }
@@ -225,14 +236,21 @@ public class TcpPortClient : MonoBehaviour
     {
         string framePath = Application.persistentDataPath + "/frame_delays.csv";
         string controlPath = Application.persistentDataPath + "/control_delays.csv";
+        string fpsPath = Application.persistentDataPath + "/fps_over_time.csv";
 
         System.IO.File.WriteAllLines(framePath,
-            display_frame_delays.Select(d => $"{d.timestamp},{d.delay}"));
+            new string[] { "timestamp,delay" }
+                .Concat(display_frame_delays.Select(d => $"{d.timestamp},{d.value}")));
 
         System.IO.File.WriteAllLines(controlPath,
-            send_controls_delays.Select(d => $"{d.timestamp},{d.delay}"));
+            new string[] { "timestamp,delay" }
+                .Concat(send_controls_delays.Select(d => $"{d.timestamp},{d.value}")));
+        
+        System.IO.File.WriteAllLines(fpsPath,
+            new string[] { "timestamp,fps" }
+                .Concat(fps_over_time.Select(d => $"{d.timestamp},{d.value}")));
 
-        Debug.Log($"Delays written to:\n{framePath}\n{controlPath}");
+        Debug.Log($"Delays written to:\n{framePath}\n{controlPath}\n{fpsPath}");
     }
 
 
@@ -268,14 +286,14 @@ internal class VideoFrame
     }
 }
 
-internal class Delay
+internal class Stat
 {
     public DateTimeOffset timestamp;
-    public int delay;
+    public int value;
 
-    public Delay(DateTimeOffset timestamp, int delay)
+    public Stat(DateTimeOffset timestamp, int value)
     {
         this.timestamp = timestamp;
-        this.delay = delay;
+        this.value = value;
     }
 }
