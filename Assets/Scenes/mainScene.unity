@@ -720,6 +720,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   robotIp: 192.168.0.102
+  kpi: 1
 --- !u!1 &2097686654
 GameObject:
   m_ObjectHideFlags: 0

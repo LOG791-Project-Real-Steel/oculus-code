@@ -10,6 +10,7 @@ using UnityEngine;
 public class TcpPortClient : MonoBehaviour
 {
     public string robotIp = "10.0.0.5";
+    public bool kpi = false;
     
     TcpClient client;
     TcpClient ping;
@@ -48,7 +49,7 @@ public class TcpPortClient : MonoBehaviour
     {
         while (true)
         {
-            if (client == null || !client.Connected || ping == null || !ping.Connected)
+            if (client == null || !client.Connected || (kpi && ping == null || !ping.Connected))
             {
                 Debug.Log("Attempting to connect to robot...");
                 try
@@ -57,15 +58,15 @@ public class TcpPortClient : MonoBehaviour
                     ping?.Close();
 
                     client = new TcpClient(robotIp, 9002);
-                    ping = new TcpClient(robotIp, 9003);
+                    if (kpi) ping = new TcpClient(robotIp, 9003);
 
                     clientStream = client.GetStream();
-                    pingStream = ping.GetStream();
+                    if (kpi) pingStream = ping.GetStream();
 
                     isReading = true;
 
                     StartCoroutine(ReadFramesCoroutine());
-                    StartCoroutine(ReadAndSendPingCoroutine());
+                    if (kpi) StartCoroutine(ReadAndSendPingCoroutine());
                     InvokeRepeating(nameof(SendControls), 0f, 0.05f);
                     InvokeRepeating(nameof(CollectFps), 0f, 1.0f);
 
@@ -159,7 +160,7 @@ public class TcpPortClient : MonoBehaviour
 
                 lock (_frameQueue)
                 {
-                    _frameQueue.Enqueue(new VideoFrame(frameBuffer, DateTimeOffset.Now));
+                    _frameQueue.Enqueue(new VideoFrame(frameBuffer, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
                     numberOfVideoFramesReceived++;
                 }
             }
@@ -180,7 +181,7 @@ public class TcpPortClient : MonoBehaviour
             clientStream.Write(bytes, 0, bytes.Length);
             
             DateTimeOffset now = DateTimeOffset.Now;
-            send_controls_delays.Add(new Stat(now, (int)(now - car.GetInputTimestamp()).TotalMilliseconds));
+            send_controls_delays.Add(new Stat(now.ToUnixTimeMilliseconds(), (int)(now - car.GetInputTimestamp()).TotalMilliseconds));
         }
         catch (Exception ex)
         {
@@ -194,7 +195,7 @@ public class TcpPortClient : MonoBehaviour
 
     void CollectFps()
     {
-        fps_over_time.Add(new Stat(DateTimeOffset.Now, numberOfVideoFramesReceived));
+        fps_over_time.Add(new Stat(DateTimeOffset.Now.ToUnixTimeMilliseconds(), numberOfVideoFramesReceived));
         numberOfVideoFramesReceived = 0;
     }
     
@@ -226,8 +227,8 @@ public class TcpPortClient : MonoBehaviour
                 webcamTexture.LoadImage(frame.jpegData);
                 quadRenderer.material.mainTexture = webcamTexture;
 
-                DateTimeOffset now = DateTimeOffset.Now;
-                display_frame_delays.Add(new Stat(now, (int)(now - frame.receivedTimestamp).TotalMilliseconds));
+                long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                display_frame_delays.Add(new Stat(now, (int)(now - frame.receivedTimestamp)));
             }
         }
     }
@@ -252,6 +253,43 @@ public class TcpPortClient : MonoBehaviour
 
         Debug.Log($"Delays written to:\n{framePath}\n{controlPath}\n{fpsPath}");
     }
+    
+    void SendCsvFiles()
+    {
+        try
+        {
+            using (TcpClient csvClient = new TcpClient(robotIp, 9004))
+            using (NetworkStream ns = csvClient.GetStream())
+            {
+                string[] filenames = {
+                    Application.persistentDataPath + "/frame_delays.csv",
+                    Application.persistentDataPath + "/control_delays.csv",
+                    Application.persistentDataPath + "/fps_over_time.csv"
+                };
+
+                foreach (string fullPath in filenames)
+                {
+                    string fname = System.IO.Path.GetFileName(fullPath);
+                    byte[] fnameBytes = Encoding.UTF8.GetBytes(fname);
+                    byte[] fnameLen = BitConverter.GetBytes(System.Net.IPAddress.HostToNetworkOrder(fnameBytes.Length));
+                    ns.Write(fnameLen, 0, 4);
+                    ns.Write(fnameBytes, 0, fnameBytes.Length);
+
+                    byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
+                    byte[] fileLen = BitConverter.GetBytes(System.Net.IPAddress.HostToNetworkOrder(fileBytes.Length));
+                    ns.Write(fileLen, 0, 4);
+                    ns.Write(fileBytes, 0, fileBytes.Length);
+                }
+
+                Debug.Log("CSV files sent to robot.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("Failed to send CSVs: " + ex.Message);
+        }
+    }
+
 
 
     void OnDestroy()
@@ -263,6 +301,7 @@ public class TcpPortClient : MonoBehaviour
         ping?.Close();
         
         WriteDelaysToFile();
+        SendCsvFiles();
     }
 }
 
@@ -277,9 +316,9 @@ internal class PingPongMessage
 internal class VideoFrame
 {
     public byte[] jpegData;
-    public DateTimeOffset receivedTimestamp;
+    public long receivedTimestamp;
 
-    public VideoFrame(byte[] jpegData, DateTimeOffset receivedTimestamp)
+    public VideoFrame(byte[] jpegData, long receivedTimestamp)
     {
         this.jpegData = jpegData;
         this.receivedTimestamp = receivedTimestamp;
@@ -288,10 +327,10 @@ internal class VideoFrame
 
 internal class Stat
 {
-    public DateTimeOffset timestamp;
+    public long timestamp;
     public int value;
 
-    public Stat(DateTimeOffset timestamp, int value)
+    public Stat(long timestamp, int value)
     {
         this.timestamp = timestamp;
         this.value = value;
