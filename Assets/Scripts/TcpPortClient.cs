@@ -301,7 +301,7 @@ public class TcpPortClient : MonoBehaviour
         ping?.Close();
         
         WriteDelaysToFile();
-        SendCsvFiles();
+        //SendCsvFiles(); NOT FUNCTIONAL RN
     }
 }
 
