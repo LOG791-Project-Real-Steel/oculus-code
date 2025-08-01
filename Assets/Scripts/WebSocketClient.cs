@@ -9,10 +9,13 @@ public class WebSocketClient : MonoBehaviour
     WebSocket websocket;
     Texture2D webcamTexture;
     Renderer quadRenderer;
-    
+
     private Coroutine sendLoop;
     private Controls _controls;
     private RaceCar car = new RaceCar();
+
+    // Update this with your robot's ZeroTier IP
+    private string zeroTierRobotIP = "192.168.196.112"; // Replace with your actual ZeroTier IP
 
     void Start()
     {
@@ -25,24 +28,24 @@ public class WebSocketClient : MonoBehaviour
 
     async void Connect()
     {
-        websocket = new WebSocket("ws://74.56.22.147:8765/oculus"); // home server ip
+        string wsUrl = $"ws://{zeroTierRobotIP}:8765/oculus";
+        websocket = new WebSocket(wsUrl);
 
         websocket.OnOpen += () =>
         {
             Debug.Log("Connection opened!");
             sendLoop = StartCoroutine(SendDataLoop());
         };
-        
+
         websocket.OnMessage += (bytes) =>
         {
-            // UTILISE LE JPEG RAW pu de conversion 
             webcamTexture.LoadImage(bytes);
             quadRenderer.material.mainTexture = webcamTexture;
         };
-        
+
         websocket.OnError += (e) =>
         {
-            Debug.Log("Error! " + e);
+            Debug.Log("WebSocket Error: " + e);
         };
 
         if (websocket != null)
@@ -50,7 +53,7 @@ public class WebSocketClient : MonoBehaviour
             await websocket.Connect();
         }
     }
-    
+
     private IEnumerator SendDataLoop()
     {
         while (true)
@@ -81,9 +84,9 @@ public class WebSocketClient : MonoBehaviour
         {
             car.Throttle = leftTriggerValue;
         }
-        
+
         car.Steering = -thumbstick.x;
-        
+
 #if !UNITY_WEBGL || UNITY_EDITOR
         websocket?.DispatchMessageQueue();
 #endif
