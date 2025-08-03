@@ -6,6 +6,8 @@ using TMPro;
 
 public class WebSocketClient : MonoBehaviour
 {
+    public bool keyboard = false;
+    
     WebSocket websocket;
     Texture2D webcamTexture;
     Renderer quadRenderer;
@@ -20,6 +22,7 @@ public class WebSocketClient : MonoBehaviour
         webcamTexture = new Texture2D(2, 2); // Will auto-resize
         _controls = new Controls();
         _controls.OculusTouchControllers.Enable();
+        if (keyboard) _controls.Keyboard.Enable();
         Connect();
     }
 
@@ -72,6 +75,17 @@ public class WebSocketClient : MonoBehaviour
         float rightTriggerValue = _controls.OculusTouchControllers.Forward.ReadValue<float>();
         float leftTriggerValue = _controls.OculusTouchControllers.Backward.ReadValue<float>();
         Vector2 thumbstick = _controls.OculusTouchControllers.Turn.ReadValue<Vector2>();
+        
+        if (keyboard)
+        {
+            rightTriggerValue = _controls.Keyboard.Forward.IsPressed() ? 1.0f : 0.0f;
+            leftTriggerValue = _controls.Keyboard.Backward.IsPressed() ? 1.0f : 0.0f;
+            thumbstick = new Vector2(
+                _controls.Keyboard.Left.IsPressed() ? -1.0f : 
+                _controls.Keyboard.Right.IsPressed() ? 1.0f : 0.0f, 
+                0.0f
+            );
+        }
 
         if (rightTriggerValue >= leftTriggerValue)
         {
