@@ -707,6 +707,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 875f2af85e00d124583aad72eb3794db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  keyboard: 0
 --- !u!114 &1796305235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -719,7 +720,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6140cef993531044cbc2e9af1cd6fbfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  robotIp: 192.168.0.102
+  robotIp: 100.92.136.114
   kpi: 1
 --- !u!1 &2097686654
 GameObject:

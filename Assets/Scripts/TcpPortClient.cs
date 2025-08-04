@@ -299,9 +299,12 @@ public class TcpPortClient : MonoBehaviour
         client?.Close();
         pingStream?.Close();
         ping?.Close();
-        
-        WriteDelaysToFile();
-        //SendCsvFiles(); NOT FUNCTIONAL RN
+
+        if (kpi)
+        {
+            WriteDelaysToFile();
+            SendCsvFiles();
+        }
     }
 }
 
