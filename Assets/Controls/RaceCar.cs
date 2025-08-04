@@ -4,7 +4,15 @@ using UnityEngine;
 public class RaceCar
 {
     private const float Max = 1;
+    private long timestamp;
     public float throttle = 0;
+
+    public long Timestamp
+    {
+        get => timestamp;
+        set => timestamp = value;
+    }
+
     public float steering = 0;
 
     public float Throttle
