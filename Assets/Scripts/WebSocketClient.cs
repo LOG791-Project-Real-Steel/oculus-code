@@ -144,13 +144,13 @@ public class WebSocketClient : MonoBehaviour
         }
 
         float turnValue = 0.0f;
-        if (rightThumbstick.x > 0 && leftThumbstick.x > 0)
+        if (rightThumbstick.x > 0 && leftThumbstick.x < 0)
         {
-            turnValue = Math.Max(rightThumbstick.x, leftThumbstick.x);
+            turnValue = Math.Max(rightThumbstick.x, Math.Abs(leftThumbstick.x));
         }
-        else if (rightThumbstick.x < 0 && leftThumbstick.x < 0)
+        else if (rightThumbstick.x < 0 && leftThumbstick.x > 0)
         {
-            turnValue = Math.Min(rightThumbstick.x, leftThumbstick.x);
+            turnValue = Math.Max(Math.Abs(rightThumbstick.x), leftThumbstick.x);
         }
         else
         {
