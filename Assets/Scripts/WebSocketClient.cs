@@ -143,21 +143,10 @@ public class WebSocketClient : MonoBehaviour
             car.Throttle = leftTriggerValue;
         }
 
-        float turnValue = 0.0f;
-        if (rightThumbstick.x > 0 && leftThumbstick.x < 0)
-        {
-            turnValue = Math.Max(rightThumbstick.x, Math.Abs(leftThumbstick.x));
-        }
-        else if (rightThumbstick.x < 0 && leftThumbstick.x > 0)
-        {
-            turnValue = Math.Max(Math.Abs(rightThumbstick.x), leftThumbstick.x);
-        }
-        else
-        {
-            turnValue = rightThumbstick.x - leftThumbstick.x;
-        }
-        
-        car.Steering = -turnValue;
+        float rightTurn = -rightThumbstick.x;
+        float leftTurn = -leftThumbstick.x;
+        float turnValue = Mathf.Clamp(rightTurn + leftTurn, -1.0f, 1.0f);
+        car.Steering = turnValue;
         
         car.Timestamp = start.ToUnixTimeMilliseconds();
 
