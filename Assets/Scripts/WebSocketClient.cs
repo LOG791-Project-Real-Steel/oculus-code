@@ -12,7 +12,6 @@ public class WebSocketClient : MonoBehaviour
 {
     public bool keyboard = false;
     
-    WebSocket websocket;
     public string robotIp = "100.80.175.10";
     public bool kpi = false;
 
@@ -117,7 +116,7 @@ public class WebSocketClient : MonoBehaviour
             if (kpi)
             {
                 long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                send_controls_delays.Add(new Stat(now, (int)(now - car.Timestamp)));
+                send_controls_delays.Add(new Stat(now, (int)(now - car.GetInputTimestamp().ToUnixTimeMilliseconds())));
             }
             
             yield return new WaitForSeconds(0.05f);
@@ -142,11 +141,11 @@ public class WebSocketClient : MonoBehaviour
         {
             rightTriggerValue = _controls.Keyboard.Forward.IsPressed() ? 1.0f : 0.0f;
             leftTriggerValue = _controls.Keyboard.Backward.IsPressed() ? 1.0f : 0.0f;
-            thumbstick = new Vector2(
+            /*thumbstick = new Vector2(
                 _controls.Keyboard.Left.IsPressed() ? -1.0f : 
                 _controls.Keyboard.Right.IsPressed() ? 1.0f : 0.0f, 
                 0.0f
-            );
+            );*/
         }
         
         if (rightTriggerValue >= leftTriggerValue)
@@ -163,7 +162,7 @@ public class WebSocketClient : MonoBehaviour
         float turnValue = Mathf.Clamp(rightTurn + leftTurn, -1.0f, 1.0f);
         car.Steering = turnValue;
         
-        car.Timestamp = start.ToUnixTimeMilliseconds();
+        car.SetInputTimestamp(start);
 
 #if !UNITY_WEBGL || UNITY_EDITOR
         websocket?.DispatchMessageQueue();
@@ -266,16 +265,16 @@ public class WebSocketClient : MonoBehaviour
             this.timestamp = timestamp;
         }
     }
-}
-
-internal class Stat
-{
-    public long timestamp;
-    public int value;
-
-    public Stat(long timestamp, int value)
+    
+    class Stat
     {
-        this.timestamp = timestamp;
-        this.value = value;
+        public long timestamp;
+        public int value;
+
+        public Stat(long timestamp, int value)
+        {
+            this.timestamp = timestamp;
+            this.value = value;
+        }
     }
 }

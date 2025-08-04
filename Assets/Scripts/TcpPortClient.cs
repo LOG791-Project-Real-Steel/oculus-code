@@ -204,7 +204,8 @@ public class TcpPortClient : MonoBehaviour
         DateTimeOffset time = DateTimeOffset.Now;
         float rightTriggerValue = _controls.OculusTouchControllers.Forward.ReadValue<float>();
         float leftTriggerValue = _controls.OculusTouchControllers.Backward.ReadValue<float>();
-        Vector2 thumbstick = _controls.OculusTouchControllers.Turn.ReadValue<Vector2>();
+        Vector2 rightThumbstick = _controls.OculusTouchControllers.Turn.ReadValue<Vector2>();
+        Vector2 leftThumbstick = _controls.OculusTouchControllers.Turn2.ReadValue<Vector2>();
 
         if (rightTriggerValue >= leftTriggerValue)
         {
@@ -215,7 +216,11 @@ public class TcpPortClient : MonoBehaviour
             car.Throttle = leftTriggerValue;
         }
         
-        car.Steering = -thumbstick.x;
+        float rightTurn = -rightThumbstick.x;
+        float leftTurn = -leftThumbstick.x;
+        float turnValue = Mathf.Clamp(rightTurn + leftTurn, -1.0f, 1.0f);
+        car.Steering = turnValue;
+        
         car.SetInputTimestamp(time);
         
         // Apply video frame

@@ -9,12 +9,6 @@ public class RaceCar
     
     public float throttle = 0;
 
-    public long Timestamp
-    {
-        get => timestamp;
-        set => timestamp = value;
-    }
-
     public float steering = 0;
 
     public void SetInputTimestamp(DateTimeOffset timestamp)

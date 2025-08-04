@@ -271,13 +271,13 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_OculusTouchControllers_Forward = m_OculusTouchControllers.FindAction("Forward", throwIfNotFound: true);
         m_OculusTouchControllers_Backward = m_OculusTouchControllers.FindAction("Backward", throwIfNotFound: true);
         m_OculusTouchControllers_Turn = m_OculusTouchControllers.FindAction("Turn", throwIfNotFound: true);
+        m_OculusTouchControllers_Turn2 = m_OculusTouchControllers.FindAction("Turn2", throwIfNotFound: true);
         // Keyboard
         m_Keyboard = asset.FindActionMap("Keyboard", throwIfNotFound: true);
         m_Keyboard_Forward = m_Keyboard.FindAction("Forward", throwIfNotFound: true);
         m_Keyboard_Backward = m_Keyboard.FindAction("Backward", throwIfNotFound: true);
         m_Keyboard_Left = m_Keyboard.FindAction("Left", throwIfNotFound: true);
         m_Keyboard_Right = m_Keyboard.FindAction("Right", throwIfNotFound: true);
-        m_OculusTouchControllers_Turn2 = m_OculusTouchControllers.FindAction("Turn2", throwIfNotFound: true);
     }
 
     ~@Controls()
