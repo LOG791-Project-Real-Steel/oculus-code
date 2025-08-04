@@ -117,6 +117,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Turn2"",
+                    ""type"": ""Value"",
+                    ""id"": ""f05c63b0-0566-43ca-afc2-ad8ac9226d58"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -150,6 +159,17 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Turn"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0bd4d451-186e-4883-ab74-4d998d446311"",
+                    ""path"": ""<OculusTouchController>{LeftHand}/{Primary2DAxis}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Turn2"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -257,6 +277,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_Keyboard_Backward = m_Keyboard.FindAction("Backward", throwIfNotFound: true);
         m_Keyboard_Left = m_Keyboard.FindAction("Left", throwIfNotFound: true);
         m_Keyboard_Right = m_Keyboard.FindAction("Right", throwIfNotFound: true);
+        m_OculusTouchControllers_Turn2 = m_OculusTouchControllers.FindAction("Turn2", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -341,6 +362,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_OculusTouchControllers_Forward;
     private readonly InputAction m_OculusTouchControllers_Backward;
     private readonly InputAction m_OculusTouchControllers_Turn;
+    private readonly InputAction m_OculusTouchControllers_Turn2;
     /// <summary>
     /// Provides access to input actions defined in input action map "OculusTouchControllers".
     /// </summary>
@@ -364,6 +386,10 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "OculusTouchControllers/Turn".
         /// </summary>
         public InputAction @Turn => m_Wrapper.m_OculusTouchControllers_Turn;
+        /// <summary>
+        /// Provides access to the underlying input action "OculusTouchControllers/Turn2".
+        /// </summary>
+        public InputAction @Turn2 => m_Wrapper.m_OculusTouchControllers_Turn2;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -399,6 +425,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Turn.started += instance.OnTurn;
             @Turn.performed += instance.OnTurn;
             @Turn.canceled += instance.OnTurn;
+            @Turn2.started += instance.OnTurn2;
+            @Turn2.performed += instance.OnTurn2;
+            @Turn2.canceled += instance.OnTurn2;
         }
 
         /// <summary>
@@ -419,6 +448,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Turn.started -= instance.OnTurn;
             @Turn.performed -= instance.OnTurn;
             @Turn.canceled -= instance.OnTurn;
+            @Turn2.started -= instance.OnTurn2;
+            @Turn2.performed -= instance.OnTurn2;
+            @Turn2.canceled -= instance.OnTurn2;
         }
 
         /// <summary>
@@ -609,6 +641,13 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnTurn(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Turn2" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTurn2(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Keyboard" which allows adding and removing callbacks.
