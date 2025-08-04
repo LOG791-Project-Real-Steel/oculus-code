@@ -131,7 +131,8 @@ public class WebSocketClient : MonoBehaviour
         DateTimeOffset start = DateTimeOffset.Now;
         float rightTriggerValue = _controls.OculusTouchControllers.Forward.ReadValue<float>();
         float leftTriggerValue = _controls.OculusTouchControllers.Backward.ReadValue<float>();
-        Vector2 thumbstick = _controls.OculusTouchControllers.Turn.ReadValue<Vector2>();
+        Vector2 rightThumbstick = _controls.OculusTouchControllers.Turn.ReadValue<Vector2>();
+        Vector2 leftThumbstick = _controls.OculusTouchControllers.Turn2.ReadValue<Vector2>();
         
         if (rightTriggerValue >= leftTriggerValue)
         {
@@ -142,7 +143,22 @@ public class WebSocketClient : MonoBehaviour
             car.Throttle = leftTriggerValue;
         }
 
-        car.Steering = -thumbstick.x;
+        float turnValue = 0.0f;
+        if (rightThumbstick.x > 0 && leftThumbstick.x > 0)
+        {
+            turnValue = Math.Max(rightThumbstick.x, leftThumbstick.x);
+        }
+        else if (rightThumbstick.x < 0 && leftThumbstick.x < 0)
+        {
+            turnValue = Math.Min(rightThumbstick.x, leftThumbstick.x);
+        }
+        else
+        {
+            turnValue = rightThumbstick.x - leftThumbstick.x;
+        }
+        
+        car.Steering = -turnValue;
+        
         car.Timestamp = start.ToUnixTimeMilliseconds();
 
 #if !UNITY_WEBGL || UNITY_EDITOR
