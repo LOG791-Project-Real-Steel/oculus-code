@@ -1,11 +1,11 @@
 # Oculus Code
-Repository for the code that runs on the Oculus quest 2.
 
-## Authors
-- Adam Mihajlovic
-- Maxence Lord
-- Jean-Christophe Benoit
-- Raphael Camara
+![Status: No Longer Maintained](https://img.shields.io/badge/status-no--longer--maintained-red?style=for-the-badge)
+![Purpose: Production](https://img.shields.io/badge/purpose-production-blue?style=for-the-badge)
+![Final Solution](https://img.shields.io/badge/final--solution-YES-success?style=for-the-badge)
+![Component: Oculus](https://img.shields.io/badge/component-oculus-purple?style=for-the-badge)
+
+Repository for the code that runs on the Oculus quest 2.
 
 ## Getting started
 
@@ -143,3 +143,7 @@ If you followed the build walkthrought, that folder should be called `OculusBuil
     ```shell
     adb shell am start -n com.realsteelproject.oculusapp/com.unity3d.player.UnityPlayerGameActivity
     ```
+
+---
+
+> Made with care by [@Funnyadd](https://github.com/Funnyadd), [@ImprovUser](https://github.com/ImprovUser), [@cjayneb](https://github.com/cjayneb) and [@RaphaelCamara](https://github.com/RaphaelCamara) ❤️
