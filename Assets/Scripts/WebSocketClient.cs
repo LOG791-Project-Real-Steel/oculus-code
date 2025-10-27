@@ -40,7 +40,7 @@ public class WebSocketClient : MonoBehaviour
 
     async void Connect()
     {
-        websocket = new WebSocket("ws://74.56.22.147:8764/oculus");
+        websocket = new WebSocket("wss://home.adammihajlovic.ca/oculus");
 
         websocket.OnOpen += () =>
         {
@@ -72,7 +72,7 @@ public class WebSocketClient : MonoBehaviour
     {
         InvokeRepeating(nameof(CollectFps), 0, 1.0f);
         
-        pingSocket = new WebSocket("ws://74.56.22.147:8764/oculus/ping");
+        pingSocket = new WebSocket("ws://home.adammihajlovic.ca/oculus/ping");
 
         pingSocket.OnOpen += () => { Debug.Log("Ping socket connected!"); };
 
