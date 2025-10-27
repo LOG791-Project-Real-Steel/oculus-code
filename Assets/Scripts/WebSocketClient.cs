@@ -28,7 +28,7 @@ public class WebSocketClient : MonoBehaviour
 
     async void Connect()
     {
-        websocket = new WebSocket("ws://74.56.22.147:8765/oculus"); // home server ip
+        websocket = new WebSocket("wss://home.adammihajlovic.ca/oculus"); // home server endpoint
 
         websocket.OnOpen += () =>
         {
