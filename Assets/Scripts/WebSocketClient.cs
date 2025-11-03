@@ -136,11 +136,11 @@ public class WebSocketClient : MonoBehaviour
         
         if (rightTriggerValue >= leftTriggerValue)
         {
-            car.Throttle = -rightTriggerValue;
+            car.Throttle = rightTriggerValue;
         }
         else
         {
-            car.Throttle = leftTriggerValue;
+            car.Throttle = -leftTriggerValue;
         }
 
         float rightTurn = -rightThumbstick.x;
