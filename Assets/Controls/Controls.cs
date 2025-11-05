@@ -126,6 +126,24 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Recenter"",
+                    ""type"": ""Button"",
+                    ""id"": ""444f0275-47c0-46f3-988c-cc4a568d4deb"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleHeadMove"",
+                    ""type"": ""Button"",
+                    ""id"": ""135b5dd0-0505-4001-ad52-3b5b656374bf"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -172,6 +190,28 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""Turn2"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ccbebfc9-a897-436d-a1ae-2018b49514c0"",
+                    ""path"": ""<XRController>{RightHand}/{PrimaryButton}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Recenter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0fc2765c-448b-423b-a229-b22031758824"",
+                    ""path"": ""<XRController>{RightHand}/{SecondaryButton}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleHeadMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -184,6 +224,8 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_OculusTouchControllers_Backward = m_OculusTouchControllers.FindAction("Backward", throwIfNotFound: true);
         m_OculusTouchControllers_Turn = m_OculusTouchControllers.FindAction("Turn", throwIfNotFound: true);
         m_OculusTouchControllers_Turn2 = m_OculusTouchControllers.FindAction("Turn2", throwIfNotFound: true);
+        m_OculusTouchControllers_Recenter = m_OculusTouchControllers.FindAction("Recenter", throwIfNotFound: true);
+        m_OculusTouchControllers_ToggleHeadMove = m_OculusTouchControllers.FindAction("ToggleHeadMove", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -268,6 +310,8 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_OculusTouchControllers_Backward;
     private readonly InputAction m_OculusTouchControllers_Turn;
     private readonly InputAction m_OculusTouchControllers_Turn2;
+    private readonly InputAction m_OculusTouchControllers_Recenter;
+    private readonly InputAction m_OculusTouchControllers_ToggleHeadMove;
     /// <summary>
     /// Provides access to input actions defined in input action map "OculusTouchControllers".
     /// </summary>
@@ -295,6 +339,14 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "OculusTouchControllers/Turn2".
         /// </summary>
         public InputAction @Turn2 => m_Wrapper.m_OculusTouchControllers_Turn2;
+        /// <summary>
+        /// Provides access to the underlying input action "OculusTouchControllers/Recenter".
+        /// </summary>
+        public InputAction @Recenter => m_Wrapper.m_OculusTouchControllers_Recenter;
+        /// <summary>
+        /// Provides access to the underlying input action "OculusTouchControllers/ToggleHeadMove".
+        /// </summary>
+        public InputAction @ToggleHeadMove => m_Wrapper.m_OculusTouchControllers_ToggleHeadMove;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -333,6 +385,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Turn2.started += instance.OnTurn2;
             @Turn2.performed += instance.OnTurn2;
             @Turn2.canceled += instance.OnTurn2;
+            @Recenter.started += instance.OnRecenter;
+            @Recenter.performed += instance.OnRecenter;
+            @Recenter.canceled += instance.OnRecenter;
+            @ToggleHeadMove.started += instance.OnToggleHeadMove;
+            @ToggleHeadMove.performed += instance.OnToggleHeadMove;
+            @ToggleHeadMove.canceled += instance.OnToggleHeadMove;
         }
 
         /// <summary>
@@ -356,6 +414,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Turn2.started -= instance.OnTurn2;
             @Turn2.performed -= instance.OnTurn2;
             @Turn2.canceled -= instance.OnTurn2;
+            @Recenter.started -= instance.OnRecenter;
+            @Recenter.performed -= instance.OnRecenter;
+            @Recenter.canceled -= instance.OnRecenter;
+            @ToggleHeadMove.started -= instance.OnToggleHeadMove;
+            @ToggleHeadMove.performed -= instance.OnToggleHeadMove;
+            @ToggleHeadMove.canceled -= instance.OnToggleHeadMove;
         }
 
         /// <summary>
@@ -424,5 +488,19 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnTurn2(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Recenter" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRecenter(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleHeadMove" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleHeadMove(InputAction.CallbackContext context);
     }
 }

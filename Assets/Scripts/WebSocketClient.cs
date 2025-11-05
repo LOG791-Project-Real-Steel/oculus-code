@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using TMPro;
 
 public class WebSocketClient : MonoBehaviour
 {
@@ -28,15 +27,31 @@ public class WebSocketClient : MonoBehaviour
 
     private int numberOfVideoFramesReceived = 0;
 
+    private float yaw0, pitch0;
+    private float panSm, tiltSm;
+    private const float panMax = 180f;
+    private const float tiltMax = 45f;
+    private const float smoothAlpha = 0.3f;
+
     void Start()
     {
         quadRenderer = GetComponent<Renderer>();
         webcamTexture = new Texture2D(2, 2);
         _controls = new Controls();
         _controls.OculusTouchControllers.Enable();
+
+        // Existing A button recenter
+        _controls.OculusTouchControllers.Recenter.performed += _ => OnRecenterPressed();
+
+        // NEW: B button toggles headMove
+        _controls.OculusTouchControllers.ToggleHeadMove.performed += _ => OnToggleHeadMove();
+
+        RecenterHead();
+
         Connect();
         if (kpi) ConnectPingSocket();
     }
+
 
     async void Connect()
     {
@@ -51,10 +66,10 @@ public class WebSocketClient : MonoBehaviour
         websocket.OnMessage += (bytes) =>
         {
             long start = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            
+
             webcamTexture.LoadImage(bytes);
             quadRenderer.material.mainTexture = webcamTexture;
-            
+
             long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             display_frame_delays.Add(new Stat(now, (int)(now - start)));
             numberOfVideoFramesReceived++;
@@ -71,7 +86,7 @@ public class WebSocketClient : MonoBehaviour
     async void ConnectPingSocket()
     {
         InvokeRepeating(nameof(CollectFps), 0, 1.0f);
-        
+
         pingSocket = new WebSocket("wss://home.adammihajlovic.ca/oculus/ping");
 
         pingSocket.OnOpen += () => { Debug.Log("Ping socket connected!"); };
@@ -115,11 +130,17 @@ public class WebSocketClient : MonoBehaviour
                 long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 send_controls_delays.Add(new Stat(now, (int)(now - car.Timestamp)));
             }
-            
+
             yield return new WaitForSeconds(0.05f);
         }
     }
-    
+
+    private void OnToggleHeadMove()
+    {
+        car.headMove = !car.headMove;
+        Debug.Log("Head movement toggled: " + car.headMove);
+    }
+
     void CollectFps()
     {
         fps_over_time.Add(new Stat(DateTimeOffset.Now.ToUnixTimeMilliseconds(), numberOfVideoFramesReceived));
@@ -147,13 +168,58 @@ public class WebSocketClient : MonoBehaviour
         float leftTurn = -leftThumbstick.x;
         float turnValue = Mathf.Clamp(rightTurn + leftTurn, -1.0f, 1.0f);
         car.Steering = turnValue;
-        
+
+        var cam = Camera.main;
+        if (cam != null)
+        {
+            Vector3 e = cam.transform.rotation.eulerAngles;
+            float yaw = e.y;                    // [0..360)
+            float pitch = NormalizeSigned(e.x); // [-180..180]
+
+            // delta since recenter
+            float pan = Mathf.DeltaAngle(yaw0, yaw);  // [-180..180]
+            float tilt = pitch - pitch0;              // [-inf..inf], but we clamp below
+
+            // clamp
+            pan = Mathf.Clamp(pan, -panMax, panMax);
+            tilt = Mathf.Clamp(tilt, -tiltMax, tiltMax);
+
+            // smoothing
+            panSm = Mathf.Lerp(panSm, pan, smoothAlpha);
+            tiltSm = Mathf.Lerp(tiltSm, tilt, smoothAlpha);
+
+            // assign to payload (degrees)
+            car.headPanDeg = panSm;
+            car.headTiltDeg = tiltSm;
+        }
+
         car.Timestamp = start.ToUnixTimeMilliseconds();
 
 #if !UNITY_WEBGL || UNITY_EDITOR
         websocket?.DispatchMessageQueue();
         pingSocket?.DispatchMessageQueue();
 #endif
+    }
+
+    // Convert [0..360) to [-180..180]
+    private static float NormalizeSigned(float deg)
+    {
+        return (deg > 180f) ? deg - 360f : deg;
+    }
+
+    private void OnRecenterPressed()
+    {
+        RecenterHead();
+        Debug.Log("Head recentered (A button).");
+    }
+
+    private void RecenterHead()
+    {
+        var cam = Camera.main;
+        if (cam == null) return;
+        Vector3 e = cam.transform.rotation.eulerAngles;
+        yaw0 = e.y;
+        pitch0 = NormalizeSigned(e.x);
     }
 
     void WriteDelaysToFile()
@@ -241,9 +307,7 @@ public class WebSocketClient : MonoBehaviour
         public string type;
         public string timestamp;
 
-        public PingPongMessage()
-        {
-        }
+        public PingPongMessage() { }
 
         public PingPongMessage(string type, string timestamp)
         {
